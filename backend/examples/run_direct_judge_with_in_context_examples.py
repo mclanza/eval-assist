@@ -1,6 +1,6 @@
 from evalassist.judges import DirectInstance, DirectJudge
 from evalassist.judges.const import DEFAULT_JUDGE_INFERENCE_PARAMS
-from evalassist.judges.types import Criteria, CriteriaOption, InstanceWithGroundTruth
+from evalassist.judges.types import Criteria, CriteriaOption, InstanceResult
 from unitxt.inference import CrossProviderInferenceEngine
 
 judge = DirectJudge(
@@ -34,7 +34,7 @@ criteria = Criteria(
     context_fields=["customer_question"],
     examples=[
         # Clear & helpful
-        InstanceWithGroundTruth(
+        InstanceResult(
             instance=DirectInstance(
                 context={"customer_question": "How do I reset my password?"},
                 response=(
@@ -42,18 +42,32 @@ criteria = Criteria(
                     "Follow the instructions sent to your registered email to complete the reset."
                 ),
             ),
-            ground_truth="Yes",
+            selected_option="Yes",
+            explanation=(
+                "The answer is clearly structured and directly addresses the user's question. "
+                "It explains both where to go ('Forgot Password' on the login page) and what to do next.\n"
+                "* Provides a specific action ('clicking Forgot Password').\n"
+                "* Mentions follow-up steps involving the email instructions.\n"
+                "* Uses complete sentences without ambiguity."
+            ),
         ),
         # Confusing or incomplete
-        InstanceWithGroundTruth(
+        InstanceResult(
             instance=DirectInstance(
                 context={"customer_question": "How do I track my order?"},
                 response="Track order maybe via account settings or email link. Hope this helps.",
             ),
-            ground_truth="No",
+            selected_option="No",
+            explanation=(
+                "The answer is vague and lacks clear instructions. The user is left unsure of the "
+                "exact steps to take.\n"
+                "* Uses uncertain language ('maybe') rather than definitive steps.\n"
+                "* Does not specify where in account settings or what email link is referenced.\n"
+                "* Ends with a filler phrase ('Hope this helps') instead of actionable guidance."
+            ),
         ),
         # Clear, structured
-        InstanceWithGroundTruth(
+        InstanceResult(
             instance=DirectInstance(
                 context={"customer_question": "Do you offer international shipping?"},
                 response=(
@@ -61,22 +75,35 @@ criteria = Criteria(
                     "and shipping costs will be calculated automatically."
                 ),
             ),
-            ground_truth="Yes",
+            selected_option="Yes",
+            explanation=(
+                "The response is direct and informative, giving both the answer and relevant process details.\n"
+                "* Confirms availability of international shipping clearly ('Yes, we ship internationally').\n"
+                "* Provides procedural guidance ('select your country at checkout').\n"
+                "* Describes what happens next ('shipping costs will be calculated automatically')."
+            ),
         ),
         # Misleading or incomplete
-        InstanceWithGroundTruth(
+        InstanceResult(
             instance=DirectInstance(
                 context={"customer_question": "Can I return an item?"},
                 response="Return item no, not sure. Check website maybe.",
             ),
-            ground_truth="No",
+            selected_option="No",
+            explanation=(
+                "The response is unclear, hesitant, and unhelpful. It does not provide a definitive "
+                "answer or actionable steps.\n"
+                "* Uses uncertain and contradictory phrasing ('no, not sure').\n"
+                "* Offers no concrete guidance ('Check website maybe').\n"
+                "* Lacks structure, clarity, and accurate information."
+            ),
         ),
     ],
 )
 
+
 # --- Test instances ---
 instances = [
-    # Failing case: polite but inaccurate
     DirectInstance(
         context={
             "customer_question": "Can I reset my password without access to my email?"
@@ -86,7 +113,6 @@ instances = [
             "You’ll need to create a new account."
         ),
     ),
-    # Passing case: clear, accurate, relevant
     DirectInstance(
         context={
             "customer_question": "Can I reset my password without access to my email?"
@@ -96,7 +122,6 @@ instances = [
             "Use your registered phone number or contact support for assistance."
         ),
     ),
-    # Mixed case: clear but not fully accurate (ignores phone option)
     DirectInstance(
         context={
             "customer_question": "Can I reset my password without access to my email?"
@@ -133,11 +158,17 @@ for i, r in enumerate(results):
 """
 ## Result 1
 ### Selected option / Score
-No / 0.0
+Yes / 1.0
 ## Result 2
 ### Selected option / Score
 Yes / 1.0
 ## Result 3
+### Selected option / Score
+Yes / 1.0
+## Result 4
+### Selected option / Score
+No / 0.0
+## Result 5
 ### Selected option / Score
 Yes / 1.0
 """

@@ -6,7 +6,7 @@ from typing import cast
 
 from datasets import IterableDataset
 from evalassist.judges import Criteria
-from evalassist.judges.types import InstanceWithGroundTruth
+from evalassist.judges.types import InstanceResult
 from unitxt.api import evaluate, load_dataset
 from unitxt.artifact import fetch_artifact
 from unitxt.llm_as_judge import CriteriaWithOptions
@@ -279,9 +279,9 @@ def add_examples(
             d[criterion.name]["ground_truth"].append(label)
     for k, v in d.items():
         v["examples"] = [
-            InstanceWithGroundTruth(
+            InstanceResult(
                 instance=instance,
-                ground_truth=next(
+                selected_option=next(
                     iter(
                         option.name
                         for option in v["criteria"].options

@@ -10,7 +10,7 @@ from evalassist.judges import (
     DirectJudge,
     UnitxtDirectJudge,
 )
-from evalassist.judges.types import InstanceWithGroundTruth
+from evalassist.judges.types import InstanceResult
 from unitxt.artifact import fetch_artifact
 from unitxt.inference import CrossProviderInferenceEngine
 from unitxt.llm_as_judge import CriteriaWithOptions
@@ -57,7 +57,6 @@ def test_main_judge():
     results: list[DirectInstanceResult] = judge.evaluate(
         instances=instances, criteria=criteria
     )
-
     assert results[0].selected_option == "Excellent"
     assert cast(float, results[1].score) >= 0.5
     assert cast(float, results[2].score) == 0.0
@@ -257,7 +256,7 @@ def test_direct_judge_with_synthetic_persona_mocked_inference_success(mock_infer
 
     response = judge.evaluate(instances=instances, criteria="Is the response faithful?")
     assert mock_infer.call_count == 2
-    assert "persona_name" in response[0].metadata["prompt"]
+    assert "persona_name" in response[0].metadata["prompt"][0]["content"]
 
 
 @patch(
@@ -295,12 +294,12 @@ def test_direct_judge_with_ice_mocked_inference_success(mock_infer):
             ),
         ],
         examples=[
-            InstanceWithGroundTruth(
+            InstanceResult(
                 instance=DirectInstance(
                     context={"question": "What is the capital of France?"},
                     response="Paris",
                 ),
-                ground_truth="Yes",
+                selected_option="Yes",
             )
         ],
     )
@@ -308,8 +307,8 @@ def test_direct_judge_with_ice_mocked_inference_success(mock_infer):
     response = judge.evaluate(instances=instances, criteria=criteria)
     assert mock_infer.call_count == 1
     assert (
-        "## Examples" in response[0].metadata["prompt"]
-        and "Paris" in response[0].metadata["prompt"]
+        "## Examples" in response[0].metadata["prompt"][1]["content"]
+        and "Paris" in response[0].metadata["prompt"][1]["content"]
     )
 
 

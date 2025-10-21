@@ -15,7 +15,6 @@ The module defines several key types in [`types.py`](./types.py):
 * `Instance`: Abstract base class for evaluation instances.
 * `DirectInstance` and `PairwiseInstance`: Concrete subclasses for direct and pairwise evaluations.
 * `Criteria` and `CriteriaOption`: Classes representing evaluation criteria and their options.
-* `InstanceWithGroundTruth`: Class representing an instance with its ground truth.
 * `DirectInstanceResult` and `PairwiseInstanceResult`: Classes for storing evaluation results.
 * `MultiCriteria` and `MultiCriteriaItem`: Classes for defining and evaluating multiple criteria simultaneously on direct assessment evaluation.
 * `MultiCriteriaItemResult`: Class for storing results of multi-criteria item direct evaluation.
